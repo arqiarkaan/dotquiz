@@ -32,12 +32,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, savedUsername }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-white">
       <Header />
 
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4">
         <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-primary-100">
+          <div className="bg-white/60 backdrop-blur-md border border-white/30 shadow-lg rounded-2xl p-8">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <DotquizLogo size={64} />

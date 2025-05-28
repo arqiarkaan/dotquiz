@@ -97,5 +97,15 @@
 
   body {
     @apply bg-background text-foreground;
+    position: relative;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: url('data:image/svg+xml;utf8,<svg width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="2" fill="%2300b89411"/></svg>');
+    opacity: 0.15;
   }
 }

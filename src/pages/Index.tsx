@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { QuizResult, QuizState } from '@/types/quiz';
 import { storage } from '@/utils/storage';
 import { toast } from '@/hooks/use-toast';
@@ -7,19 +7,35 @@ import QuizPage from '@/components/QuizPage';
 import ResultsPage from '@/components/ResultsPage';
 import { Button } from '@/components/ui/button';
 import DotquizLogo from '@/components/DotquizLogo';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+import Header from '@/components/Header';
 
 type AppState = 'login' | 'quiz' | 'results' | 'resume';
+
+const SESSION_FLAG = 'dotquiz_quiz_in_progress';
 
 const Index = () => {
   const [appState, setAppState] = useState<AppState>('login');
   const [username, setUsername] = useState<string>('');
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [savedQuizState, setSavedQuizState] = useState<QuizState | null>(null);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
     // Check for saved user and quiz state
     const savedUsername = storage.getUsername();
     const savedState = storage.getQuizState();
+    const sessionFlag = sessionStorage.getItem(SESSION_FLAG);
 
     if (savedUsername) {
       setUsername(savedUsername);
@@ -30,7 +46,12 @@ const Index = () => {
         !savedState.isCompleted
       ) {
         setSavedQuizState(savedState);
-        setAppState('resume');
+        // Jika ada flag session, berarti hanya refresh, langsung lanjut quiz
+        if (sessionFlag) {
+          setAppState('quiz');
+        } else {
+          setAppState('resume');
+        }
       }
     }
   }, []);
@@ -46,7 +67,12 @@ const Index = () => {
       !savedState.isCompleted
     ) {
       setSavedQuizState(savedState);
-      setAppState('resume');
+      // Jika ada flag session, berarti hanya refresh, langsung lanjut quiz
+      if (sessionStorage.getItem(SESSION_FLAG)) {
+        setAppState('quiz');
+      } else {
+        setAppState('resume');
+      }
     } else {
       setAppState('quiz');
     }
@@ -55,6 +81,7 @@ const Index = () => {
   const handleQuizComplete = (result: QuizResult) => {
     setQuizResult(result);
     setAppState('results');
+    sessionStorage.removeItem(SESSION_FLAG); // Hapus flag saat quiz selesai
     toast({
       title: 'Quiz Complete!',
       description: `You scored ${result.score}% - ${result.correctAnswers} out of ${result.totalQuestions} correct!`,
@@ -66,30 +93,58 @@ const Index = () => {
     setSavedQuizState(null);
     setQuizResult(null);
     setAppState('quiz');
+    sessionStorage.setItem(SESSION_FLAG, 'true'); // Set flag saat mulai quiz baru
   };
 
-  const handleLogout = () => {
+  const handleLogoutRequest = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
     storage.clearAll();
     setUsername('');
     setQuizResult(null);
     setSavedQuizState(null);
     setAppState('login');
+    sessionStorage.removeItem(SESSION_FLAG);
+    setShowLogoutDialog(false);
   };
 
   const handleResumeQuiz = () => {
     setAppState('quiz');
+    sessionStorage.setItem(SESSION_FLAG, 'true'); // Set flag saat lanjut quiz
   };
 
   const handleStartNewQuiz = () => {
     storage.clearQuizState();
     setSavedQuizState(null);
     setAppState('quiz');
+    sessionStorage.setItem(SESSION_FLAG, 'true'); // Set flag saat mulai quiz baru
   };
+
+  // AlertDialog global, selalu render di root
+  const logoutDialog = (
+    <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Logout Confirmation</AlertDialogTitle>
+          <AlertDialogDescription>
+            If you logout, all your quiz progress will be lost. Are you sure you
+            want to logout?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmLogout}>Logout</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 
   if (appState === 'resume' && savedQuizState) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 border border-primary-100 text-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-white flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white/60 backdrop-blur-md border border-white/30 shadow-lg rounded-2xl p-8 text-center">
           <div className="flex justify-center mb-4">
             <DotquizLogo size={64} className="animate-pulse" />
           </div>
@@ -119,7 +174,7 @@ const Index = () => {
               Start New Quiz
             </Button>
             <Button
-              onClick={handleLogout}
+              onClick={handleLogoutRequest}
               variant="ghost"
               className="w-full text-gray-500"
             >
@@ -127,6 +182,7 @@ const Index = () => {
             </Button>
           </div>
         </div>
+        {logoutDialog}
       </div>
     );
   }
@@ -142,22 +198,28 @@ const Index = () => {
 
     case 'quiz':
       return (
-        <QuizPage
-          username={username}
-          onLogout={handleLogout}
-          onQuizComplete={handleQuizComplete}
-          savedState={savedQuizState || undefined}
-        />
+        <>
+          <QuizPage
+            username={username}
+            onLogout={handleLogoutRequest}
+            onQuizComplete={handleQuizComplete}
+            savedState={savedQuizState || undefined}
+          />
+          {logoutDialog}
+        </>
       );
 
     case 'results':
       return quizResult ? (
-        <ResultsPage
-          username={username}
-          result={quizResult}
-          onNewQuiz={handleNewQuiz}
-          onLogout={handleLogout}
-        />
+        <>
+          <ResultsPage
+            username={username}
+            result={quizResult}
+            onNewQuiz={handleNewQuiz}
+            onLogout={handleLogoutRequest}
+          />
+          {logoutDialog}
+        </>
       ) : null;
 
     default:

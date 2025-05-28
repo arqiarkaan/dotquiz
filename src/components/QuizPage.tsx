@@ -10,6 +10,17 @@ import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
 import { Button } from '@/components/ui/button';
 import DotquizLogo from './DotquizLogo';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 
 interface QuizPageProps {
   username: string;
@@ -212,9 +223,11 @@ const QuizPage: React.FC<QuizPageProps> = ({
     };
   };
 
+  const unansweredCount = questions.length - Object.keys(answers).length;
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
+      <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-white">
         <Header username={username} onLogout={onLogout} showLogout />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
@@ -232,7 +245,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-green-200 via-green-100 to-white">
       <Header username={username} onLogout={onLogout} showLogout />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -242,17 +255,54 @@ const QuizPage: React.FC<QuizPageProps> = ({
             formatTime={timer.formatTime}
             isRunning={timer.isRunning}
           />
-          <Button
-            onClick={() => {
-              const result = calculateResult();
-              storage.clearQuizState();
-              onQuizComplete(result);
-            }}
-            variant="outline"
-            className="text-gray-600 hover:text-primary-600"
-          >
-            End Quiz
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="text-gray-600 hover:text-primary-600"
+              >
+                End Quiz
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>End Quiz?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {unansweredCount > 0 ? (
+                    <>
+                      You still have {unansweredCount} unanswered{' '}
+                      {unansweredCount === 1 ? 'question' : 'questions'}. Are
+                      you sure you want to end the quiz now?{' '}
+                      <span className="text-red-600 font-semibold">
+                        This will submit your answers and end the quiz
+                        immediately.
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      Are you sure you want to end the quiz now?{' '}
+                      <span className="text-red-600 font-semibold">
+                        This will submit your answers and end the quiz
+                        immediately.
+                      </span>
+                    </>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    const result = calculateResult();
+                    storage.clearQuizState();
+                    onQuizComplete(result);
+                  }}
+                >
+                  End Quiz
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         <div className="mb-8">
