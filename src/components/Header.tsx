@@ -17,8 +17,10 @@ const Header: React.FC<HeaderProps> = ({
     <header className="bg-white/60 backdrop-blur-md shadow-sm border-b border-white/30">
       <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <DotquizLogo size={32} />
-          <h1 className="text-2xl font-bold text-primary-600">dotquiz</h1>
+          <DotquizLogo size={24} className="sm:size-8" />
+          <h1 className="text-lg sm:text-2xl font-bold text-primary-600">
+            dotquiz
+          </h1>
         </div>
 
         {username && (

@@ -101,23 +101,28 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             const isSelected = selectedAnswer === answer;
             const isAnswered = !!selectedAnswer;
             const isCorrectAnswer = answer === question.correct_answer;
-            const isUserWrong = isSelected && !isCorrectAnswer;
+            let answerClass = '';
+            if (isAnswered) {
+              if (isCorrectAnswer) {
+                answerClass = 'border-green-500 bg-green-50 text-green-700';
+              } else if (isSelected) {
+                answerClass = 'border-red-500 bg-red-50 text-red-700';
+              } else {
+                answerClass = 'border-gray-200 bg-white text-gray-700';
+              }
+            }
             return (
               <Button
                 key={index}
                 onClick={() => handleSelect(answer)}
                 variant="outline"
-                className={`w-full text-left p-6 h-auto justify-start transition-all duration-200 text-wrap flex items-center gap-2
-                  ${
-                    isAnswered
-                      ? isCorrectAnswer
-                        ? 'border-green-500 bg-green-50 text-green-700'
-                        : isUserWrong
-                        ? 'border-red-500 bg-red-50 text-red-700'
-                        : ''
-                      : ''
-                  }
-                  ${isAnswered && isSelected ? 'ring-2 ring-primary-400' : ''}`}
+                className={`w-full text-left p-6 h-auto justify-start transition-all duration-200 text-wrap flex items-center gap-2 ${answerClass} ${
+                  isAnswered && isSelected
+                    ? isCorrectAnswer
+                      ? 'ring-2 ring-green-400'
+                      : 'ring-2 ring-red-400'
+                    : ''
+                }`}
                 disabled={isAnswered}
                 style={{
                   opacity: 1,
@@ -125,7 +130,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   cursor: isAnswered ? 'not-allowed' : 'pointer',
                 }}
               >
-                <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-600 rounded-full mr-4 font-semibold">
+                <span
+                  className={`inline-flex items-center justify-center w-8 h-8 rounded-full mr-4 font-semibold
+                  ${
+                    isAnswered
+                      ? isCorrectAnswer
+                        ? 'bg-green-500 text-white'
+                        : isSelected
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-200 text-gray-500'
+                      : 'bg-primary-100 text-primary-600'
+                  }
+                `}
+                >
                   {String.fromCharCode(65 + index)}
                 </span>
                 <span className="flex-1">{answer}</span>
@@ -133,7 +150,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                 {isAnswered &&
                   (isCorrectAnswer ? (
                     <CheckCircle className="w-6 h-6 text-green-500 ml-2" />
-                  ) : isUserWrong ? (
+                  ) : isSelected ? (
                     <XCircle className="w-6 h-6 text-red-500 ml-2" />
                   ) : null)}
               </Button>

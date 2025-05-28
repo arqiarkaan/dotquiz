@@ -303,9 +303,25 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                                 ? 'border-red-400 bg-red-50 text-red-800'
                                 : 'border-gray-200 bg-gray-50 text-gray-700'
                             }
-                            ${isUser ? 'ring-2 ring-primary-400' : ''}`}
+                            ${
+                              isUser
+                                ? isCorrect
+                                  ? 'ring-2 ring-green-400'
+                                  : 'ring-2 ring-red-400'
+                                : ''
+                            }`}
                         >
-                          <span className="inline-flex items-center justify-center w-7 h-7 bg-primary-100 text-primary-600 rounded-full mr-3 font-semibold">
+                          <span
+                            className={`inline-flex items-center justify-center w-7 h-7 rounded-full mr-3 font-semibold
+                            ${
+                              isCorrect
+                                ? 'bg-green-500 text-white'
+                                : isUser && !isCorrect
+                                ? 'bg-red-500 text-white'
+                                : 'bg-gray-200 text-gray-500'
+                            }
+                          `}
+                          >
                             {String.fromCharCode(65 + i)}
                           </span>
                           <span className="flex-1">{ans}</span>
