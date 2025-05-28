@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 
 interface UseTimerProps {
@@ -7,23 +6,42 @@ interface UseTimerProps {
   autoStart?: boolean;
 }
 
-export const useTimer = ({ duration, onTimeUp, autoStart = false }: UseTimerProps) => {
+export const useTimer = ({
+  duration,
+  onTimeUp,
+  autoStart = false,
+}: UseTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(duration);
   const [isRunning, setIsRunning] = useState(autoStart);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number>(Date.now());
+  const initialDurationRef = useRef<number>(duration);
 
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (isRunning) {
+      startTimeRef.current =
+        Date.now() - (initialDurationRef.current - timeLeft) * 1000;
+
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            onTimeUp?.();
-            return 0;
+        const elapsedSeconds = Math.floor(
+          (Date.now() - startTimeRef.current) / 1000
+        );
+        const remainingTime = Math.max(
+          0,
+          initialDurationRef.current - elapsedSeconds
+        );
+
+        setTimeLeft(remainingTime);
+
+        if (remainingTime <= 0) {
+          setIsRunning(false);
+          onTimeUp?.();
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
           }
-          return prev - 1;
-        });
-      }, 1000);
+        }
+      }, 100); // Update more frequently for smoother display
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -36,19 +54,29 @@ export const useTimer = ({ duration, onTimeUp, autoStart = false }: UseTimerProp
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, timeLeft, onTimeUp]);
+  }, [isRunning, onTimeUp]);
 
-  const start = () => setIsRunning(true);
+  const start = () => {
+    startTimeRef.current =
+      Date.now() - (initialDurationRef.current - timeLeft) * 1000;
+    setIsRunning(true);
+  };
+
   const pause = () => setIsRunning(false);
+
   const reset = () => {
+    initialDurationRef.current = duration;
     setTimeLeft(duration);
     setIsRunning(false);
+    startTimeRef.current = Date.now();
   };
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
   };
 
   return {
@@ -58,6 +86,6 @@ export const useTimer = ({ duration, onTimeUp, autoStart = false }: UseTimerProp
     pause,
     reset,
     formatTime: formatTime(timeLeft),
-    setTimeLeft
+    setTimeLeft,
   };
 };

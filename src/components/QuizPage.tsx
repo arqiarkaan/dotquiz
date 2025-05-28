@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Question, QuizState, QuizResult } from '@/types/quiz';
 import { triviaApi } from '@/services/triviaApi';
@@ -18,11 +17,11 @@ interface QuizPageProps {
   savedState?: QuizState;
 }
 
-const QuizPage: React.FC<QuizPageProps> = ({ 
-  username, 
-  onLogout, 
+const QuizPage: React.FC<QuizPageProps> = ({
+  username,
+  onLogout,
   onQuizComplete,
-  savedState 
+  savedState,
 }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -33,9 +32,15 @@ const QuizPage: React.FC<QuizPageProps> = ({
   const QUIZ_DURATION = 600; // 10 minutes
 
   const timer = useTimer({
-    duration: savedState ? Math.max(0, savedState.duration - Math.floor((Date.now() - savedState.startTime) / 1000)) : QUIZ_DURATION,
+    duration: savedState
+      ? Math.max(
+          0,
+          savedState.duration -
+            Math.floor((Date.now() - savedState.startTime) / 1000)
+        )
+      : QUIZ_DURATION,
     onTimeUp: handleTimeUp,
-    autoStart: !savedState
+    autoStart: !savedState,
   });
 
   useEffect(() => {
@@ -62,7 +67,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
         answers,
         startTime,
         duration: QUIZ_DURATION,
-        isCompleted: false
+        isCompleted: false,
       };
       storage.saveQuizState(state);
     }
@@ -76,9 +81,10 @@ const QuizPage: React.FC<QuizPageProps> = ({
       timer.start();
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to load questions",
-        variant: "destructive"
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to load questions',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -96,28 +102,36 @@ const QuizPage: React.FC<QuizPageProps> = ({
     setAnswers(newAnswers);
 
     if (currentQuestionIndex < questions.length - 1) {
-      // Move to next question
-      setTimeout(() => {
-        setCurrentQuestionIndex(prev => prev + 1);
-      }, 500);
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
-      // Quiz completed
-      setTimeout(() => {
-        const result = calculateResult(newAnswers);
-        storage.clearQuizState();
-        onQuizComplete(result);
-      }, 500);
+      const result = calculateResult(newAnswers);
+      storage.clearQuizState();
+      onQuizComplete(result);
     }
   };
 
   const calculateResult = (finalAnswers = answers): QuizResult => {
     const answeredQuestions = Object.keys(finalAnswers).length;
     const correctAnswers = questions.reduce((count, question, index) => {
-      return finalAnswers[index] === question.correct_answer ? count + 1 : count;
+      return finalAnswers[index] === question.correct_answer
+        ? count + 1
+        : count;
     }, 0);
 
     const timeUsed = Math.floor((Date.now() - startTime) / 1000);
     const score = Math.round((correctAnswers / questions.length) * 100);
+
+    const questionResults = questions.map((question, index) => {
+      const userAnswer = finalAnswers[index] || '';
+      return {
+        question: question.question,
+        userAnswer,
+        isCorrect: userAnswer === question.correct_answer,
+        correctAnswer: question.correct_answer,
+        category: question.category,
+        difficulty: question.difficulty,
+      };
+    });
 
     return {
       totalQuestions: questions.length,
@@ -125,7 +139,8 @@ const QuizPage: React.FC<QuizPageProps> = ({
       correctAnswers,
       incorrectAnswers: answeredQuestions - correctAnswers,
       score,
-      timeUsed
+      timeUsed,
+      questionResults,
     };
   };
 
@@ -138,7 +153,9 @@ const QuizPage: React.FC<QuizPageProps> = ({
             <div className="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
               <span className="text-white font-bold text-2xl">•</span>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-2">Loading Quiz...</h2>
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              Loading Quiz...
+            </h2>
             <p className="text-gray-600">Preparing your questions</p>
           </div>
         </div>
@@ -149,10 +166,10 @@ const QuizPage: React.FC<QuizPageProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white">
       <Header username={username} onLogout={onLogout} showLogout />
-      
+
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <Timer 
+          <Timer
             timeLeft={timer.timeLeft}
             formatTime={timer.formatTime}
             isRunning={timer.isRunning}
@@ -171,9 +188,9 @@ const QuizPage: React.FC<QuizPageProps> = ({
         </div>
 
         <div className="mb-8">
-          <ProgressBar 
-            current={currentQuestionIndex + 1} 
-            total={questions.length} 
+          <ProgressBar
+            current={currentQuestionIndex + 1}
+            total={questions.length}
           />
         </div>
 

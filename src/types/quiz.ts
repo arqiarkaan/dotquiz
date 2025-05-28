@@ -18,6 +18,15 @@ export interface QuizState {
   isCompleted: boolean;
 }
 
+export interface QuestionResult {
+  question: string;
+  userAnswer: string;
+  isCorrect: boolean;
+  correctAnswer: string;
+  category: string;
+  difficulty: string;
+}
+
 export interface QuizResult {
   totalQuestions: number;
   answeredQuestions: number;
@@ -25,4 +34,5 @@ export interface QuizResult {
   incorrectAnswers: number;
   score: number;
   timeUsed: number;
+  questionResults: QuestionResult[];
 }

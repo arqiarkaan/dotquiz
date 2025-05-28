@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Question } from '@/types/quiz';
 import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface QuestionCardProps {
   question: Question;
@@ -9,12 +10,17 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
+const FEEDBACK_DELAY = 1500; // ms
+
 const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   onAnswer,
   questionNumber,
   totalQuestions,
 }) => {
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
   const allAnswers = question.shuffled_answers || [
     ...question.incorrect_answers,
     question.correct_answer,
@@ -32,6 +38,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const handleSelect = (answer: string) => {
+    if (selectedAnswer) return;
+    setSelectedAnswer(answer);
+    setShowFeedback(true);
+    setTimeout(() => {
+      setShowFeedback(false);
+      onAnswer(answer);
+      setSelectedAnswer(null);
+    }, FEEDBACK_DELAY);
+  };
+
+  const isCorrect = selectedAnswer === question.correct_answer;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-8 border border-primary-100 animate-slide-in">
@@ -57,13 +76,26 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         {question.question}
       </h3>
 
-      <div className="space-y-3">
+      <div className="space-y-3 mb-6">
         {allAnswers.map((answer, index) => (
           <Button
             key={index}
-            onClick={() => onAnswer(answer)}
+            onClick={() => handleSelect(answer)}
             variant="outline"
-            className="w-full text-left p-6 h-auto justify-start hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all duration-200 text-wrap"
+            className={`w-full text-left p-6 h-auto justify-start transition-all duration-200 text-wrap ${
+              selectedAnswer
+                ? answer === question.correct_answer
+                  ? 'border-green-500 bg-green-50 text-green-700'
+                  : answer === selectedAnswer
+                  ? 'border-red-500 bg-red-50 text-red-700'
+                  : ''
+                : ''
+            } ${
+              selectedAnswer && answer === selectedAnswer
+                ? 'ring-2 ring-primary-400'
+                : ''
+            }`}
+            disabled={!!selectedAnswer}
           >
             <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-600 rounded-full mr-4 font-semibold">
               {String.fromCharCode(65 + index)}
@@ -72,6 +104,32 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           </Button>
         ))}
       </div>
+
+      {showFeedback && selectedAnswer && (
+        <div
+          className={`flex items-center justify-center gap-3 p-5 rounded-xl shadow-md text-lg font-semibold animate-fade-in mb-2
+            ${
+              isCorrect
+                ? 'bg-green-100 text-green-700'
+                : 'bg-red-100 text-red-700'
+            }`}
+        >
+          {isCorrect ? (
+            <CheckCircle className="w-7 h-7 text-green-500 animate-pop" />
+          ) : (
+            <XCircle className="w-7 h-7 text-red-500 animate-pop" />
+          )}
+          <span>
+            {isCorrect ? (
+              'Jawaban Benar!'
+            ) : (
+              <>
+                Salah. Jawaban benar: <b>{question.correct_answer}</b>
+              </>
+            )}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
