@@ -1,7 +1,7 @@
 import React from 'react';
 import { QuizResult } from '@/types/quiz';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, Clock, Trophy } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Trophy, HelpCircle } from 'lucide-react';
 import Header from './Header';
 
 interface ResultsPageProps {
@@ -162,21 +162,38 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
               <div
                 key={idx}
                 className={`p-6 rounded-2xl shadow border-2 transition-all duration-300 bg-white
-                  ${q.isCorrect ? 'border-green-300' : 'border-red-300'}`}
+                  ${
+                    q.userAnswer === ''
+                      ? 'border-gray-300 bg-gray-50'
+                      : q.isCorrect
+                      ? 'border-green-300'
+                      : 'border-red-300'
+                  }
+                `}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    {q.isCorrect ? (
+                    {q.userAnswer === '' ? (
+                      <HelpCircle className="text-gray-400 w-7 h-7 animate-pop" />
+                    ) : q.isCorrect ? (
                       <CheckCircle className="text-green-500 w-7 h-7 animate-pop" />
                     ) : (
                       <XCircle className="text-red-500 w-7 h-7 animate-pop" />
                     )}
                     <span
                       className={`font-semibold text-lg ${
-                        q.isCorrect ? 'text-green-700' : 'text-red-700'
+                        q.userAnswer === ''
+                          ? 'text-gray-600'
+                          : q.isCorrect
+                          ? 'text-green-700'
+                          : 'text-red-700'
                       }`}
                     >
-                      {q.isCorrect ? 'Correct' : 'Incorrect'}
+                      {q.userAnswer === ''
+                        ? 'Not Answered'
+                        : q.isCorrect
+                        ? 'Correct'
+                        : 'Incorrect'}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -199,6 +216,11 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                 <div className="mb-4 text-gray-800 font-medium text-base leading-relaxed">
                   {idx + 1}. {q.question}
                 </div>
+                {q.userAnswer === '' && (
+                  <div className="mb-2 text-sm text-gray-500 italic">
+                    You did not answer this question.
+                  </div>
+                )}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                   {q.allAnswers.map((ans, i) => {
                     const isUser = ans === q.userAnswer;
