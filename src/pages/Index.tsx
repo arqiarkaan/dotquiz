@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { QuizResult, QuizState } from '@/types/quiz';
 import { storage } from '@/utils/storage';
@@ -7,6 +6,7 @@ import LoginPage from '@/components/LoginPage';
 import QuizPage from '@/components/QuizPage';
 import ResultsPage from '@/components/ResultsPage';
 import { Button } from '@/components/ui/button';
+import DotquizLogo from '@/components/DotquizLogo';
 
 type AppState = 'login' | 'quiz' | 'results' | 'resume';
 
@@ -23,8 +23,12 @@ const Index = () => {
 
     if (savedUsername) {
       setUsername(savedUsername);
-      
-      if (savedState && savedState.username === savedUsername && !savedState.isCompleted) {
+
+      if (
+        savedState &&
+        savedState.username === savedUsername &&
+        !savedState.isCompleted
+      ) {
         setSavedQuizState(savedState);
         setAppState('resume');
       }
@@ -33,10 +37,14 @@ const Index = () => {
 
   const handleLogin = (newUsername: string) => {
     setUsername(newUsername);
-    
+
     // Check if there's a saved quiz for this user
     const savedState = storage.getQuizState();
-    if (savedState && savedState.username === newUsername && !savedState.isCompleted) {
+    if (
+      savedState &&
+      savedState.username === newUsername &&
+      !savedState.isCompleted
+    ) {
       setSavedQuizState(savedState);
       setAppState('resume');
     } else {
@@ -48,7 +56,7 @@ const Index = () => {
     setQuizResult(result);
     setAppState('results');
     toast({
-      title: "Quiz Complete!",
+      title: 'Quiz Complete!',
       description: `You scored ${result.score}% - ${result.correctAnswers} out of ${result.totalQuestions} correct!`,
     });
   };
@@ -82,15 +90,19 @@ const Index = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-white flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 border border-primary-100 text-center">
-          <div className="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">•</span>
+          <div className="flex justify-center mb-4">
+            <DotquizLogo size={64} className="animate-pulse" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Welcome back, {username}!</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Welcome back, {username}!
+          </h2>
           <p className="text-gray-600 mb-6">
-            You have an unfinished quiz. Would you like to continue where you left off?
+            You have an unfinished quiz. Would you like to continue where you
+            left off?
           </p>
           <p className="text-sm text-gray-500 mb-6">
-            Question {savedQuizState.currentQuestionIndex + 1} of {savedQuizState.questions.length}
+            Question {savedQuizState.currentQuestionIndex + 1} of{' '}
+            {savedQuizState.questions.length}
           </p>
           <div className="space-y-3">
             <Button
@@ -122,12 +134,12 @@ const Index = () => {
   switch (appState) {
     case 'login':
       return (
-        <LoginPage 
-          onLogin={handleLogin} 
+        <LoginPage
+          onLogin={handleLogin}
           savedUsername={storage.getUsername() || undefined}
         />
       );
-    
+
     case 'quiz':
       return (
         <QuizPage
@@ -137,7 +149,7 @@ const Index = () => {
           savedState={savedQuizState || undefined}
         />
       );
-    
+
     case 'results':
       return quizResult ? (
         <ResultsPage
@@ -147,7 +159,7 @@ const Index = () => {
           onLogout={handleLogout}
         />
       ) : null;
-    
+
     default:
       return null;
   }

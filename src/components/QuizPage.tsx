@@ -9,6 +9,7 @@ import Timer from './Timer';
 import ProgressBar from './ProgressBar';
 import QuestionCard from './QuestionCard';
 import { Button } from '@/components/ui/button';
+import DotquizLogo from './DotquizLogo';
 
 interface QuizPageProps {
   username: string;
@@ -55,7 +56,6 @@ const QuizPage: React.FC<QuizPageProps> = ({
 
   useEffect(() => {
     if (savedState) {
-      // Resume saved quiz
       setQuestions(savedState.questions);
       setCurrentQuestionIndex(savedState.currentQuestionIndex);
       setAnswers(savedState.answers);
@@ -69,11 +69,9 @@ const QuizPage: React.FC<QuizPageProps> = ({
       // Start new quiz
       loadQuestions();
     }
-    // Cleanup: simpan waktu tersisa saat unmount
     return () => {
       unmounted.current = true;
       if (questions.length > 0 && !timer.isRunning) {
-        // Simpan waktu tersisa dan pausedAt
         const state: QuizState = {
           username,
           questions,
@@ -161,7 +159,6 @@ const QuizPage: React.FC<QuizPageProps> = ({
   const handlePause = () => {
     setIsPaused(true);
     timer.pause();
-    // Simpan state saat pause
     const state: QuizState = {
       username,
       questions,
@@ -221,8 +218,8 @@ const QuizPage: React.FC<QuizPageProps> = ({
         <Header username={username} onLogout={onLogout} showLogout />
         <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
           <div className="text-center">
-            <div className="w-16 h-16 bg-primary-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <span className="text-white font-bold text-2xl">•</span>
+            <div className="flex justify-center mb-4">
+              <DotquizLogo size={64} className="animate-pulse" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-800 mb-2">
               Loading Quiz...

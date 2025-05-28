@@ -10,7 +10,7 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
-const FEEDBACK_DELAY = 2500; // ms
+const FEEDBACK_DELAY = 2000; // ms
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
