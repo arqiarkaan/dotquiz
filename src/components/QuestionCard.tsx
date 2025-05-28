@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Question } from '@/types/quiz';
 import { Button } from '@/components/ui/button';
@@ -10,21 +9,27 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ 
-  question, 
-  onAnswer, 
-  questionNumber, 
-  totalQuestions 
+const QuestionCard: React.FC<QuestionCardProps> = ({
+  question,
+  onAnswer,
+  questionNumber,
+  totalQuestions,
 }) => {
-  const allAnswers = [...question.incorrect_answers, question.correct_answer]
-    .sort(() => Math.random() - 0.5);
+  const allAnswers = question.shuffled_answers || [
+    ...question.incorrect_answers,
+    question.correct_answer,
+  ];
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'easy':
+        return 'bg-green-100 text-green-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'hard':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -35,7 +40,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           <span className="text-sm font-medium text-gray-500">
             Question {questionNumber} of {totalQuestions}
           </span>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(question.difficulty)}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${getDifficultyColor(
+              question.difficulty
+            )}`}
+          >
             {question.difficulty}
           </span>
         </div>
