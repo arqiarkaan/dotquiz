@@ -55,8 +55,8 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-primary-100">
-            <div className="text-center">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-primary-100 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center h-full w-full">
               <div
                 className={`text-6xl font-bold mb-2 ${getScoreColor(
                   result.score
@@ -153,55 +153,92 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
           </Button>
         </div>
 
-        {/* Detail per-question results */}
         <div className="mt-12">
           <h3 className="text-2xl font-bold text-gray-800 mb-6">
-            Detail Jawaban
+            Answer Details
           </h3>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {result.questionResults.map((q, idx) => (
               <div
                 key={idx}
-                className={`p-6 rounded-xl shadow flex flex-col md:flex-row md:items-center gap-4 border-2 transition-all duration-300
-                  ${
-                    q.isCorrect
-                      ? 'border-green-300 bg-green-50'
-                      : 'border-red-300 bg-red-50'
-                  }`}
+                className={`p-6 rounded-2xl shadow border-2 transition-all duration-300 bg-white
+                  ${q.isCorrect ? 'border-green-300' : 'border-red-300'}`}
               >
-                <div className="flex items-center gap-3 mb-2 md:mb-0">
-                  {q.isCorrect ? (
-                    <CheckCircle className="text-green-500 w-7 h-7 animate-pop" />
-                  ) : (
-                    <XCircle className="text-red-500 w-7 h-7 animate-pop" />
-                  )}
-                  <span className="font-semibold text-lg">
-                    {q.isCorrect ? 'Benar' : 'Salah'}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-gray-700 font-medium mb-1">
-                    {idx + 1}. {q.question}
-                  </div>
-                  <div className="text-sm mb-1">
-                    <span className="font-semibold">Jawaban Anda:</span>{' '}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    {q.isCorrect ? (
+                      <CheckCircle className="text-green-500 w-7 h-7 animate-pop" />
+                    ) : (
+                      <XCircle className="text-red-500 w-7 h-7 animate-pop" />
+                    )}
                     <span
-                      className={
+                      className={`font-semibold text-lg ${
                         q.isCorrect ? 'text-green-700' : 'text-red-700'
-                      }
+                      }`}
                     >
-                      {q.userAnswer || <i>(kosong)</i>}
+                      {q.isCorrect ? 'Correct' : 'Incorrect'}
                     </span>
                   </div>
-                  {!q.isCorrect && (
-                    <div className="text-sm">
-                      <span className="font-semibold">Jawaban Benar:</span>{' '}
-                      <span className="text-green-700">{q.correctAnswer}</span>
-                    </div>
-                  )}
-                  <div className="text-xs text-gray-500 mt-1">
-                    Kategori: {q.category} | Tingkat: {q.difficulty}
+                  <div className="flex gap-2">
+                    <span className="px-2 py-1 rounded bg-primary-50 text-primary-600 text-xs font-semibold">
+                      {q.category}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${
+                        q.difficulty === 'easy'
+                          ? 'bg-green-100 text-green-700'
+                          : q.difficulty === 'medium'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {q.difficulty}
+                    </span>
                   </div>
+                </div>
+                <div className="mb-4 text-gray-800 font-medium text-base leading-relaxed">
+                  {idx + 1}. {q.question}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                  {q.allAnswers.map((ans, i) => {
+                    const isUser = ans === q.userAnswer;
+                    const isCorrect = ans === q.correctAnswer;
+                    return (
+                      <div
+                        key={i}
+                        className={`flex items-center p-3 rounded-lg border transition-all duration-200 text-sm font-medium
+                          ${
+                            isCorrect
+                              ? 'border-green-400 bg-green-50 text-green-800'
+                              : isUser && !isCorrect
+                              ? 'border-red-400 bg-red-50 text-red-800'
+                              : 'border-gray-200 bg-gray-50 text-gray-700'
+                          }
+                          ${isUser ? 'ring-2 ring-primary-400' : ''}`}
+                      >
+                        <span className="inline-flex items-center justify-center w-7 h-7 bg-primary-100 text-primary-600 rounded-full mr-3 font-semibold">
+                          {String.fromCharCode(65 + i)}
+                        </span>
+                        <span className="flex-1">{ans}</span>
+                        {isCorrect && (
+                          <CheckCircle className="ml-2 text-green-500 w-5 h-5" />
+                        )}
+                        {isUser && !isCorrect && (
+                          <XCircle className="ml-2 text-red-500 w-5 h-5" />
+                        )}
+                        {isUser && isCorrect && (
+                          <span className="ml-2 text-green-600 font-bold">
+                            (Your Answer)
+                          </span>
+                        )}
+                        {isUser && !isCorrect && (
+                          <span className="ml-2 text-red-600 font-bold">
+                            (Your Answer)
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}

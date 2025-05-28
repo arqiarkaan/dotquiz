@@ -123,6 +123,10 @@ const QuizPage: React.FC<QuizPageProps> = ({
 
     const questionResults = questions.map((question, index) => {
       const userAnswer = finalAnswers[index] || '';
+      const allAnswers = question.shuffled_answers || [
+        ...question.incorrect_answers,
+        question.correct_answer,
+      ];
       return {
         question: question.question,
         userAnswer,
@@ -130,6 +134,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
         correctAnswer: question.correct_answer,
         category: question.category,
         difficulty: question.difficulty,
+        allAnswers,
       };
     });
 

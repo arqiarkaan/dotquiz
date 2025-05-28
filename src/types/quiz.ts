@@ -25,6 +25,7 @@ export interface QuestionResult {
   correctAnswer: string;
   category: string;
   difficulty: string;
+  allAnswers: string[];
 }
 
 export interface QuizResult {

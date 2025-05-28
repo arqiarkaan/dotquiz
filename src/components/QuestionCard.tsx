@@ -10,7 +10,7 @@ interface QuestionCardProps {
   totalQuestions: number;
 }
 
-const FEEDBACK_DELAY = 1500; // ms
+const FEEDBACK_DELAY = 2500; // ms
 
 const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
@@ -121,10 +121,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
           )}
           <span>
             {isCorrect ? (
-              'Jawaban Benar!'
+              'Correct!'
             ) : (
               <>
-                Salah. Jawaban benar: <b>{question.correct_answer}</b>
+                Incorrect. The correct answer is:{' '}
+                <b>{question.correct_answer}</b>
               </>
             )}
           </span>
