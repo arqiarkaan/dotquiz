@@ -1,10 +1,21 @@
-
 import { QuizState } from '@/types/quiz';
 
 const STORAGE_KEYS = {
   USERNAME: 'dotquiz_username',
   QUIZ_STATE: 'dotquiz_state',
 } as const;
+
+// Base64 helpers
+function encodeBase64(str: string): string {
+  return typeof window !== 'undefined'
+    ? window.btoa(unescape(encodeURIComponent(str)))
+    : Buffer.from(str, 'utf-8').toString('base64');
+}
+function decodeBase64(str: string): string {
+  return typeof window !== 'undefined'
+    ? decodeURIComponent(escape(window.atob(str)))
+    : Buffer.from(str, 'base64').toString('utf-8');
+}
 
 export const storage = {
   saveUsername: (username: string): void => {
@@ -16,15 +27,23 @@ export const storage = {
   },
 
   saveQuizState: (state: QuizState): void => {
-    localStorage.setItem(STORAGE_KEYS.QUIZ_STATE, JSON.stringify(state));
+    // Encrypt questions array
+    const { questions, ...rest } = state;
+    const encryptedQuestions = encodeBase64(JSON.stringify(questions));
+    const stateToSave = { ...rest, questions: encryptedQuestions };
+    localStorage.setItem(STORAGE_KEYS.QUIZ_STATE, JSON.stringify(stateToSave));
   },
 
   getQuizState: (): QuizState | null => {
     const saved = localStorage.getItem(STORAGE_KEYS.QUIZ_STATE);
     if (!saved) return null;
-    
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (typeof parsed.questions === 'string') {
+        // Decrypt questions
+        parsed.questions = JSON.parse(decodeBase64(parsed.questions));
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -37,5 +56,5 @@ export const storage = {
   clearAll: (): void => {
     localStorage.removeItem(STORAGE_KEYS.USERNAME);
     localStorage.removeItem(STORAGE_KEYS.QUIZ_STATE);
-  }
+  },
 };
