@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Question, QuizState, QuizResult } from '@/types/quiz';
 import { triviaApi } from '@/services/triviaApi';
 import { useTimer } from '@/hooks/useTimer';
@@ -27,21 +27,31 @@ const QuizPage: React.FC<QuizPageProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
-  const [startTime] = useState(savedState?.startTime || Date.now());
+  const [startTime, setStartTime] = useState(
+    savedState?.startTime || Date.now()
+  );
+  const [isPaused, setIsPaused] = useState(!!savedState?.pausedAt);
 
   const QUIZ_DURATION = 600; // 10 minutes
 
   const timer = useTimer({
-    duration: savedState
-      ? Math.max(
-          0,
-          savedState.duration -
-            Math.floor((Date.now() - savedState.startTime) / 1000)
-        )
-      : QUIZ_DURATION,
+    duration:
+      savedState?.timeLeft ??
+      (savedState
+        ? Math.max(
+            0,
+            savedState.duration -
+              Math.floor(
+                ((savedState.pausedAt ?? Date.now()) - savedState.startTime) /
+                  1000
+              )
+          )
+        : QUIZ_DURATION),
     onTimeUp: handleTimeUp,
-    autoStart: !savedState,
+    autoStart: false,
   });
+
+  const unmounted = useRef(false);
 
   useEffect(() => {
     if (savedState) {
@@ -50,16 +60,38 @@ const QuizPage: React.FC<QuizPageProps> = ({
       setCurrentQuestionIndex(savedState.currentQuestionIndex);
       setAnswers(savedState.answers);
       setIsLoading(false);
-      timer.start();
+      setStartTime(savedState.startTime);
+      setIsPaused(!!savedState.pausedAt);
+      if (!savedState.pausedAt) {
+        timer.start();
+      }
     } else {
       // Start new quiz
       loadQuestions();
     }
+    // Cleanup: simpan waktu tersisa saat unmount
+    return () => {
+      unmounted.current = true;
+      if (questions.length > 0 && !timer.isRunning) {
+        // Simpan waktu tersisa dan pausedAt
+        const state: QuizState = {
+          username,
+          questions,
+          currentQuestionIndex,
+          answers,
+          startTime,
+          duration: QUIZ_DURATION,
+          isCompleted: false,
+          pausedAt: Date.now(),
+          timeLeft: timer.timeLeft,
+        };
+        storage.saveQuizState(state);
+      }
+    };
   }, []);
 
   useEffect(() => {
-    // Save quiz state to localStorage
-    if (questions.length > 0 && !isLoading) {
+    if (questions.length > 0 && !isLoading && !unmounted.current) {
       const state: QuizState = {
         username,
         questions,
@@ -68,10 +100,21 @@ const QuizPage: React.FC<QuizPageProps> = ({
         startTime,
         duration: QUIZ_DURATION,
         isCompleted: false,
+        pausedAt: isPaused ? Date.now() : undefined,
+        timeLeft: timer.timeLeft,
       };
       storage.saveQuizState(state);
     }
-  }, [username, questions, currentQuestionIndex, answers, startTime]);
+  }, [
+    timer.timeLeft,
+    username,
+    questions,
+    currentQuestionIndex,
+    answers,
+    startTime,
+    isPaused,
+    isLoading,
+  ]);
 
   const loadQuestions = async () => {
     try {
@@ -110,6 +153,29 @@ const QuizPage: React.FC<QuizPageProps> = ({
     }
   };
 
+  const handleResume = () => {
+    setIsPaused(false);
+    timer.start();
+  };
+
+  const handlePause = () => {
+    setIsPaused(true);
+    timer.pause();
+    // Simpan state saat pause
+    const state: QuizState = {
+      username,
+      questions,
+      currentQuestionIndex,
+      answers,
+      startTime,
+      duration: QUIZ_DURATION,
+      isCompleted: false,
+      pausedAt: Date.now(),
+      timeLeft: timer.timeLeft,
+    };
+    storage.saveQuizState(state);
+  };
+
   const calculateResult = (finalAnswers = answers): QuizResult => {
     const answeredQuestions = Object.keys(finalAnswers).length;
     const correctAnswers = questions.reduce((count, question, index) => {
@@ -118,7 +184,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
         : count;
     }, 0);
 
-    const timeUsed = Math.floor((Date.now() - startTime) / 1000);
+    const timeUsed = QUIZ_DURATION - timer.timeLeft;
     const score = Math.round((correctAnswers / questions.length) * 100);
 
     const questionResults = questions.map((question, index) => {
@@ -199,7 +265,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
           />
         </div>
 
-        {questions[currentQuestionIndex] && (
+        {!isPaused && questions[currentQuestionIndex] && (
           <QuestionCard
             question={questions[currentQuestionIndex]}
             onAnswer={handleAnswer}

@@ -62,6 +62,8 @@ export const useTimer = ({
     setIsRunning(true);
   };
 
+  const resume = start; // alias resume
+
   const pause = () => setIsRunning(false);
 
   const reset = () => {
@@ -84,6 +86,7 @@ export const useTimer = ({
     isRunning,
     start,
     pause,
+    resume,
     reset,
     formatTime: formatTime(timeLeft),
     setTimeLeft,

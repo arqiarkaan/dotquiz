@@ -16,6 +16,8 @@ export interface QuizState {
   startTime: number;
   duration: number; // in seconds
   isCompleted: boolean;
+  pausedAt?: number; // timestamp saat quiz di-pause
+  timeLeft?: number; // waktu tersisa saat quiz di-pause
 }
 
 export interface QuestionResult {

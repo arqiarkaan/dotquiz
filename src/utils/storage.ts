@@ -43,6 +43,7 @@ export const storage = {
         // Decrypt questions
         parsed.questions = JSON.parse(decodeBase64(parsed.questions));
       }
+      // Pastikan pausedAt dan timeLeft tetap ada jika disimpan
       return parsed;
     } catch {
       return null;
