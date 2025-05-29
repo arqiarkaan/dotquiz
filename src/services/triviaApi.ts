@@ -50,6 +50,7 @@ export const triviaApi = {
           incorrect_answers: incorrect,
           shuffled_answers: allAnswers,
         };
+        
       });
     } catch (error) {
       console.error('Error fetching questions:', error);

@@ -8,12 +8,13 @@ const STORAGE_KEYS = {
 // Base64 helpers
 function encodeBase64(str: string): string {
   return typeof window !== 'undefined'
-    ? window.btoa(unescape(encodeURIComponent(str)))
+    ? window.btoa(encodeURIComponent(str))
     : Buffer.from(str, 'utf-8').toString('base64');
 }
+
 function decodeBase64(str: string): string {
   return typeof window !== 'undefined'
-    ? decodeURIComponent(escape(window.atob(str)))
+    ? decodeURIComponent(window.atob(str))
     : Buffer.from(str, 'base64').toString('utf-8');
 }
 

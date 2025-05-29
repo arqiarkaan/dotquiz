@@ -137,7 +137,6 @@ const QuizPage: React.FC<QuizPageProps> = ({
       const fetchedQuestions = await triviaApi.fetchQuestions({ amount: 10 });
       setQuestions(fetchedQuestions);
       sessionStorage.setItem('dotquiz_quiz_in_progress', 'true');
-      // Simpan state quiz segera setelah pertanyaan di-load
       const state: QuizState = {
         username,
         questions: fetchedQuestions,

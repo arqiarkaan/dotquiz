@@ -144,7 +144,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                   {String.fromCharCode(65 + index)}
                 </span>
                 <span className="flex-1">{answer}</span>
-                {/* Icon benar/salah di kanan */}
                 {isAnswered &&
                   (isCorrectAnswer ? (
                     <CheckCircle className="w-6 h-6 text-green-500 ml-2" />
