@@ -22,6 +22,14 @@ type AppState = 'login' | 'quiz' | 'results' | 'resume';
 
 const SESSION_FLAG = 'dotquiz_quiz_in_progress';
 
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, '0')}:${secs
+    .toString()
+    .padStart(2, '0')}`;
+}
+
 const Index = () => {
   const [appState, setAppState] = useState<AppState>('login');
   const [username, setUsername] = useState<string>('');
@@ -87,7 +95,7 @@ const Index = () => {
     setSavedQuizState(null);
     setQuizResult(null);
     setAppState('quiz');
-    sessionStorage.setItem(SESSION_FLAG, 'true'); 
+    sessionStorage.setItem(SESSION_FLAG, 'true');
   };
 
   const handleLogoutRequest = () => {
@@ -148,9 +156,21 @@ const Index = () => {
             You have an unfinished quiz. Would you like to continue where you
             left off?
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 mb-2">
             Question {savedQuizState.currentQuestionIndex + 1} of{' '}
             {savedQuizState.questions.length}
+          </p>
+          <p className="text-sm text-blue-600 font-semibold mb-6">
+            Time remaining:{' '}
+            {formatTime(
+              savedQuizState.timeLeft ??
+                savedQuizState.duration -
+                  Math.floor(
+                    ((savedQuizState.pausedAt ?? Date.now()) -
+                      savedQuizState.startTime) /
+                      1000
+                  )
+            )}
           </p>
           <div className="space-y-3">
             <Button
