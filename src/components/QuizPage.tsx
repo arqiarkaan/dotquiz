@@ -44,7 +44,7 @@ const QuizPage: React.FC<QuizPageProps> = ({
   );
   const [isPaused, setIsPaused] = useState(!!savedState?.pausedAt);
 
-  const QUIZ_DURATION = 10; // 10 minutes
+  const QUIZ_DURATION = 300; // 5 minutes
 
   function handleTimeUp() {
     const result = calculateResult();
