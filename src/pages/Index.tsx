@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import DotquizLogo from '@/components/DotquizLogo';
 import {
   AlertDialog,
-  AlertDialogTrigger,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogFooter,
@@ -18,7 +17,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import Header from '@/components/Header';
 
 type AppState = 'login' | 'quiz' | 'results' | 'resume';
 
@@ -32,7 +30,6 @@ const Index = () => {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
-    // Check for saved user and quiz state
     const savedUsername = storage.getUsername();
     const savedState = storage.getQuizState();
     const sessionFlag = sessionStorage.getItem(SESSION_FLAG);
@@ -46,7 +43,6 @@ const Index = () => {
         !savedState.isCompleted
       ) {
         setSavedQuizState(savedState);
-        // Jika ada flag session, berarti hanya refresh, langsung lanjut quiz
         if (sessionFlag) {
           setAppState('quiz');
         } else {
@@ -59,7 +55,6 @@ const Index = () => {
   const handleLogin = (newUsername: string) => {
     setUsername(newUsername);
 
-    // Check if there's a saved quiz for this user
     const savedState = storage.getQuizState();
     if (
       savedState &&
@@ -67,7 +62,6 @@ const Index = () => {
       !savedState.isCompleted
     ) {
       setSavedQuizState(savedState);
-      // Jika ada flag session, berarti hanya refresh, langsung lanjut quiz
       if (sessionStorage.getItem(SESSION_FLAG)) {
         setAppState('quiz');
       } else {
@@ -81,7 +75,7 @@ const Index = () => {
   const handleQuizComplete = (result: QuizResult) => {
     setQuizResult(result);
     setAppState('results');
-    sessionStorage.removeItem(SESSION_FLAG); // Hapus flag saat quiz selesai
+    sessionStorage.removeItem(SESSION_FLAG);
     toast({
       title: 'Quiz Complete!',
       description: `You scored ${result.score}% - ${result.correctAnswers} out of ${result.totalQuestions} correct!`,
@@ -93,7 +87,7 @@ const Index = () => {
     setSavedQuizState(null);
     setQuizResult(null);
     setAppState('quiz');
-    sessionStorage.setItem(SESSION_FLAG, 'true'); // Set flag saat mulai quiz baru
+    sessionStorage.setItem(SESSION_FLAG, 'true'); 
   };
 
   const handleLogoutRequest = () => {
@@ -122,7 +116,6 @@ const Index = () => {
     sessionStorage.setItem(SESSION_FLAG, 'true'); // Set flag saat mulai quiz baru
   };
 
-  // AlertDialog global, selalu render di root
   const logoutDialog = (
     <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
       <AlertDialogContent>

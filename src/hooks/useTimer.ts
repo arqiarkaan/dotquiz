@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface UseTimerProps {
-  duration: number; // in seconds
+  duration: number;
   onTimeUp?: () => void;
   autoStart?: boolean;
 }
@@ -41,7 +41,7 @@ export const useTimer = ({
             intervalRef.current = null;
           }
         }
-      }, 100); // Update more frequently for smoother display
+      }, 100);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -62,7 +62,7 @@ export const useTimer = ({
     setIsRunning(true);
   };
 
-  const resume = start; // alias resume
+  const resume = start;
 
   const pause = () => setIsRunning(false);
 

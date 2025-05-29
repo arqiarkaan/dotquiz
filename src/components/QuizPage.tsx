@@ -44,7 +44,13 @@ const QuizPage: React.FC<QuizPageProps> = ({
   );
   const [isPaused, setIsPaused] = useState(!!savedState?.pausedAt);
 
-  const QUIZ_DURATION = 600; // 10 minutes
+  const QUIZ_DURATION = 10; // 10 minutes
+
+  function handleTimeUp() {
+    const result = calculateResult();
+    storage.clearQuizState();
+    onQuizComplete(result);
+  }
 
   const timer = useTimer({
     duration:
@@ -130,6 +136,20 @@ const QuizPage: React.FC<QuizPageProps> = ({
       setIsLoading(true);
       const fetchedQuestions = await triviaApi.fetchQuestions({ amount: 10 });
       setQuestions(fetchedQuestions);
+      sessionStorage.setItem('dotquiz_quiz_in_progress', 'true');
+      // Simpan state quiz segera setelah pertanyaan di-load
+      const state: QuizState = {
+        username,
+        questions: fetchedQuestions,
+        currentQuestionIndex: 0,
+        answers: {},
+        startTime: Date.now(),
+        duration: QUIZ_DURATION,
+        isCompleted: false,
+        pausedAt: undefined,
+        timeLeft: QUIZ_DURATION,
+      };
+      storage.saveQuizState(state);
       timer.start();
     } catch (error) {
       toast({
@@ -142,12 +162,6 @@ const QuizPage: React.FC<QuizPageProps> = ({
       setIsLoading(false);
     }
   };
-
-  function handleTimeUp() {
-    const result = calculateResult();
-    storage.clearQuizState();
-    onQuizComplete(result);
-  }
 
   const handleAnswer = (answer: string) => {
     const newAnswers = { ...answers, [currentQuestionIndex]: answer };

@@ -53,8 +53,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     }, FEEDBACK_DELAY);
   };
 
-  const isCorrect = selectedAnswer === question.correct_answer;
-
   useEffect(() => {
     if (showFeedback && feedbackRef.current) {
       feedbackRef.current.scrollIntoView({
