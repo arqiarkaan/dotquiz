@@ -250,7 +250,3 @@ Berikut penjelasan implementasi setiap requirement pada project ini:
 - `src/hooks/` : Custom hooks (timer, toast)
 - `src/types/` : Tipe data (Question, QuizState, QuizResult)
 - `src/pages/` : Entry point aplikasi (Index.tsx)
-
----
-
-Untuk detail lebih lanjut, silakan cek kode di file-file yang disebutkan di atas. Semua fitur utama sudah diimplementasikan sesuai requirement.
